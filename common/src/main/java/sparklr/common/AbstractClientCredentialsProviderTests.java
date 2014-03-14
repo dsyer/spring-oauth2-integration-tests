@@ -119,13 +119,14 @@ public abstract class AbstractClientCredentialsProviderTests extends AbstractInt
 	}
 
 	static class ClientCredentials extends ClientCredentialsResourceDetails {
+
 		public ClientCredentials(Object target) {
 			setClientId("my-client-with-secret");
 			setClientSecret("secret");
 			setScope(Arrays.asList("read"));
 			setId(getClientId());
 			AbstractClientCredentialsProviderTests test = (AbstractClientCredentialsProviderTests) target;
-			setAccessTokenUri(test.serverRunning.getUrl("/oauth/token"));
+			setAccessTokenUri(test.http.getUrl(tokenPath()));
 			test.resource = this;
 		}
 	}
@@ -143,7 +144,7 @@ public abstract class AbstractClientCredentialsProviderTests extends AbstractInt
 			setClientSecret("secret");
 			setId(getClientId());
 			AbstractClientCredentialsProviderTests test = (AbstractClientCredentialsProviderTests) target;
-			setAccessTokenUri(test.serverRunning.getUrl("/oauth/token"));
+			setAccessTokenUri(test.http.getUrl(tokenPath()));
 		}
 	}
 

@@ -1,22 +1,50 @@
-This project is a minimal but functional OAuth2 Authorization Server
-(token issuer) and Resource Server (protected API). (You could split
-the two roles across two applications if you preferred.) It uses
+This project contains a selection of minimal apps that are functional
+OAuth2 Authorization Servers (token issuer) and Resource Servers
+(protected API). (You could split the two roles across two
+applications if you preferred.) It uses
 [Spring Boot](https://github.com/spring-projects/spring-boot) to
 provide an embedded servlet container and for defaulting a load of
-configuration, so you should be up and running with it very
-quickly. There are integration tests proving that it works and also
-showing you how to access it with the Spring `RestTemplate` API.
+configuration, so you should be up and running very quickly. There are
+integration tests proving that it works and also showing you how to
+access it with the Spring `RestTemplate` API.
 
-## Building
+The apps are in subdirectories:
+
+* vanilla - a basic, no-frills Authorization Server and Resource Server
+
+* jwt - uses Json Web Tokens as the token format
+
+* mappings - changes the default values for the endpoint paths and the
+  protected resource paths
+
+
+## Building and Running
 
 You need Java (1.7 or better) and Maven (3.0.5 or better):
 
 ```
+$ mvn test
+...
+<test run>
+```
+
+Each app can be launched from the `main()` method in
+`Application.java`, either from an IDE, or from the command line using
+`mvn spring-boot:run`. Or you can build an executable JAR and run
+that:
+
+```
+$ cd vanilla
 $ mvn package
 $ java -jar target/*.jar
 ...
 <app starts and listens on port 8080>
 ```
+
+Tests run using the full HTTP protocol against an embedded server on a
+random port chosen by the operating system (so it should work
+everywhere). In contrast, when the app runs from the `main()` method,
+it listens on port 8080 by default.
 
 Here are some curl commands to use to get started:
 

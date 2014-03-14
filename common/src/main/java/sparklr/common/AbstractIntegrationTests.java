@@ -16,6 +16,7 @@ package sparklr.common;
 import org.junit.Rule;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.embedded.EmbeddedWebApplicationContext;
 import org.springframework.boot.test.IntegrationTest;
 import org.springframework.boot.test.SpringApplicationConfiguration;
@@ -27,30 +28,52 @@ import org.springframework.test.context.web.WebAppConfiguration;
 
 import sparklr.common.AbstractIntegrationTests.TestConfiguration;
 
-@SpringApplicationConfiguration(classes=TestConfiguration.class, inheritLocations=true)
+@SpringApplicationConfiguration(classes = TestConfiguration.class, inheritLocations = true)
 @RunWith(SpringJUnit4ClassRunner.class)
 @WebAppConfiguration
 @IntegrationTest
 public abstract class AbstractIntegrationTests implements PortHolder {
 
+	private static String globalTokenPath;
+
+	private static String globalAuthorizePath;
+
 	@Rule
-	public HttpTestUtils serverRunning = HttpTestUtils.standard().setPortHolder(this);
-	
+	public HttpTestUtils http = HttpTestUtils.standard().setPortHolder(this);
+
 	@Rule
-	public OAuth2ContextSetup context = OAuth2ContextSetup.standard(serverRunning);
-	
+	public OAuth2ContextSetup context = OAuth2ContextSetup.standard(http);
+
 	@Autowired
 	private EmbeddedWebApplicationContext server;
-	
+
 	@Override
 	public int getPort() {
-		return server==null ? 8080 : server.getEmbeddedServletContainer().getPort();
+		return server == null ? 8080 : server.getEmbeddedServletContainer().getPort();
 	}
-	
+
+	@Value("${oauth.paths.token:/oauth/token}")
+	public void setTokenPath(String tokenPath) {
+		globalTokenPath = tokenPath;
+	}
+
+	@Value("${oauth.paths.authorize:/oauth/authorize}")
+	public void setAuthorizePath(String authorizePath) {
+		globalAuthorizePath = authorizePath;
+	}
+
+	public static String tokenPath() {
+		return globalTokenPath;
+	}
+
+	public static String authorizePath() {
+		return globalAuthorizePath;
+	}
+
 	@Configuration
-	@PropertySource(value="classpath:test.properties", ignoreResourceNotFound=true)
+	@PropertySource(value = "classpath:test.properties", ignoreResourceNotFound = true)
 	protected static class TestConfiguration {
-		
+
 	}
 
 }

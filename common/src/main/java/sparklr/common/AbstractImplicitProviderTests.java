@@ -44,8 +44,8 @@ public abstract class AbstractImplicitProviderTests extends AbstractIntegrationT
 			setId(getClientId());
 			setPreEstablishedRedirectUri("http://anywhere");
 			AbstractImplicitProviderTests test = (AbstractImplicitProviderTests) target;
-			setAccessTokenUri(test.serverRunning.getUrl("/oauth/authorize"));
-			setUserAuthorizationUri(test.serverRunning.getUrl("/oauth/authorize"));
+			setAccessTokenUri(test.http.getUrl(authorizePath()));
+			setUserAuthorizationUri(test.http.getUrl(authorizePath()));
 		}
 	}
 

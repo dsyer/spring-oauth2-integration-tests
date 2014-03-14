@@ -49,7 +49,7 @@ public abstract class AbstractRefreshTokenSupportTests extends AbstractIntegrati
 	protected void verifyTokenResponse(String accessToken, HttpStatus status) {
 		HttpHeaders headers = new HttpHeaders();
 		headers.set("Authorization", String.format("%s %s", OAuth2AccessToken.BEARER_TYPE, accessToken));
-		assertEquals(status, serverRunning.getStatusCode("/admin/beans", headers));		
+		assertEquals(status, http.getStatusCode("/admin/beans", headers));		
 	}
 
 	private OAuth2AccessToken refreshAccessToken(String refreshToken) {
@@ -61,7 +61,7 @@ public abstract class AbstractRefreshTokenSupportTests extends AbstractIntegrati
 		formData.add("scope", "read");
 
 		@SuppressWarnings("rawtypes")
-		ResponseEntity<Map> response = serverRunning.postForMap("/oauth/token", formData);
+		ResponseEntity<Map> response = http.postForMap(tokenPath(), formData);
 		assertEquals(HttpStatus.OK, response.getStatusCode());
 		assertTrue("Wrong cache control: " + response.getHeaders().getFirst("Cache-Control"), response.getHeaders().getFirst("Cache-Control").contains("no-store"));
 		@SuppressWarnings("unchecked")
@@ -74,7 +74,7 @@ public abstract class AbstractRefreshTokenSupportTests extends AbstractIntegrati
 		MultiValueMap<String, String> formData = getTokenFormData(scope, clientId);
 
 		@SuppressWarnings("rawtypes")
-		ResponseEntity<Map> response = serverRunning.postForMap("/oauth/token", formData);
+		ResponseEntity<Map> response = http.postForMap(tokenPath(), formData);
 		assertEquals(HttpStatus.OK, response.getStatusCode());
 		assertTrue("Wrong cache control: " + response.getHeaders().getFirst("Cache-Control"), response.getHeaders().getFirst("Cache-Control").contains("no-store"));
 

@@ -11,41 +11,31 @@
  * specific language governing permissions and limitations under the License.
  */
 
-package sparklr.common;
+package demo;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
+import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+
+import sparklr.common.AbstractProtectedResourceTests;
 
 /**
  * @author Dave Syer
  *
  */
-public abstract class AbstractProtectedResourceTests extends AbstractIntegrationTests {
+@SpringApplicationConfiguration(classes = Application.class)
+public class ProtectedResourceTests extends AbstractProtectedResourceTests {
 
 	@Test
-	public void testHomePageIsProtected() throws Exception {
-		ResponseEntity<String> response = http.getForString("/");
+	public void testDumpResourceIsProtected() throws Exception {
+		ResponseEntity<String> response = http.getForString("/admin/dump");
 		assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
 		assertTrue("Wrong header: " + response.getHeaders(), response.getHeaders().getFirst("WWW-Authenticate")
-				.startsWith("Bearer realm="));
+				.startsWith("Basic realm="));
 	}
-
-	@Test
-	public void testBeansResourceIsProtected() throws Exception {
-		ResponseEntity<String> response = http.getForString("/admin/beans");
-		assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
-		assertTrue("Wrong header: " + response.getHeaders(), response.getHeaders().getFirst("WWW-Authenticate")
-				.startsWith("Bearer realm="));
-	}
-
-	@Test
-	public void testHealthResourceIsOpen() throws Exception {
-		assertEquals(HttpStatus.OK, http.getStatusCode("/admin/health"));
-	}
-
 
 }

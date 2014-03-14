@@ -76,13 +76,13 @@ public abstract class AbstractResourceOwnerPasswordProviderTests extends Abstrac
 	@Test
 	public void testUnauthenticated() throws Exception {
 		// first make sure the resource is actually protected.
-		assertEquals(HttpStatus.UNAUTHORIZED, serverRunning.getStatusCode("/admin/beans"));
+		assertEquals(HttpStatus.UNAUTHORIZED, http.getStatusCode("/admin/beans"));
 	}
 
 	@Test
 	public void testUnauthenticatedErrorMessage() throws Exception {
 		HttpHeaders headers = new HttpHeaders();
-		ResponseEntity<Void> response = serverRunning.getForResponse("/admin/beans", headers);
+		ResponseEntity<Void> response = http.getForResponse("/admin/beans", headers);
 		assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
 		String authenticate = response.getHeaders().getFirst("WWW-Authenticate");
 		assertTrue("Wrong header: " + authenticate, authenticate.contains("error=\"unauthorized\""));
@@ -92,7 +92,7 @@ public abstract class AbstractResourceOwnerPasswordProviderTests extends Abstrac
 	public void testInvalidTokenErrorMessage() throws Exception {
 		HttpHeaders headers = new HttpHeaders();
 		headers.set("Authorization", "Bearer FOO");
-		ResponseEntity<Void> response = serverRunning.getForResponse("/admin/beans", headers);
+		ResponseEntity<Void> response = http.getForResponse("/admin/beans", headers);
 		assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
 		String authenticate = response.getHeaders().getFirst("WWW-Authenticate");
 		assertTrue("Wrong header: " + authenticate, authenticate.contains("error=\"invalid_token\""));
@@ -101,7 +101,7 @@ public abstract class AbstractResourceOwnerPasswordProviderTests extends Abstrac
 	@Test
 	@OAuth2ContextConfiguration(ResourceOwner.class)
 	public void testTokenObtainedWithHeaderAuthentication() throws Exception {
-		assertEquals(HttpStatus.OK, serverRunning.getStatusCode("/admin/beans"));
+		assertEquals(HttpStatus.OK, http.getStatusCode("/admin/beans"));
 		int expiry = context.getAccessToken().getExpiresIn();
 		assertTrue("Expiry not overridden in config: " + expiry, expiry < 1000);
 		assertEquals(new MediaType("application", "json", Charset.forName("UTF-8")), tokenEndpointResponse.getHeaders()
@@ -111,7 +111,7 @@ public abstract class AbstractResourceOwnerPasswordProviderTests extends Abstrac
 	@Test
 	@OAuth2ContextConfiguration(ResourceOwnerQuery.class)
 	public void testTokenObtainedWithQueryAuthentication() throws Exception {
-		assertEquals(HttpStatus.OK, serverRunning.getStatusCode("/admin/beans"));
+		assertEquals(HttpStatus.OK, http.getStatusCode("/admin/beans"));
 	}
 
 	@Test
@@ -132,13 +132,13 @@ public abstract class AbstractResourceOwnerPasswordProviderTests extends Abstrac
 	@Test
 	@OAuth2ContextConfiguration(ResourceOwnerSecretProvidedInForm.class)
 	public void testSecretProvidedInForm() throws Exception {
-		assertEquals(HttpStatus.OK, serverRunning.getStatusCode("/admin/beans"));
+		assertEquals(HttpStatus.OK, http.getStatusCode("/admin/beans"));
 	}
 
 	@Test
 	@OAuth2ContextConfiguration(ResourceOwnerSecretProvided.class)
 	public void testSecretProvidedInHeader() throws Exception {
-		assertEquals(HttpStatus.OK, serverRunning.getStatusCode("/admin/beans"));
+		assertEquals(HttpStatus.OK, http.getStatusCode("/admin/beans"));
 	}
 
 	@Test
@@ -170,7 +170,7 @@ public abstract class AbstractResourceOwnerPasswordProviderTests extends Abstrac
 		HttpHeaders headers = new HttpHeaders();
 		headers.set("Authorization", String.format("Basic %s", new String(Base64.encode("my-trusted-client:".getBytes()))));
 		headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
-		ResponseEntity<String> response = serverRunning.postForString("/oauth/token", headers, new LinkedMultiValueMap<String, String>());
+		ResponseEntity<String> response = http.postForString(tokenPath(), headers, new LinkedMultiValueMap<String, String>());
 		assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
 		assertTrue(response.getBody().contains("invalid_request"));
 	}
@@ -183,7 +183,7 @@ public abstract class AbstractResourceOwnerPasswordProviderTests extends Abstrac
 			setUsername("user");
 			setPassword("password");
 			AbstractResourceOwnerPasswordProviderTests test = (AbstractResourceOwnerPasswordProviderTests) target;
-			setAccessTokenUri(test.serverRunning.getUrl("/oauth/token"));
+			setAccessTokenUri(test.http.getUrl(tokenPath()));
 		}
 	}
 

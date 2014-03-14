@@ -159,7 +159,7 @@ public abstract class AbstractAuthorizationCodeProviderTests extends AbstractInt
 
 		AccessTokenRequest request = context.getAccessTokenRequest();
 		assertNotNull(request.getAuthorizationCode());
-		assertEquals(HttpStatus.OK, serverRunning.getStatusCode("/admin/beans"));
+		assertEquals(HttpStatus.OK, http.getStatusCode("/admin/beans"));
 
 	}
 
@@ -228,7 +228,7 @@ public abstract class AbstractAuthorizationCodeProviderTests extends AbstractInt
 
 		String authorizeUrl = getAuthorizeUrl("my-trusted-client", "http://anywhere.com", "read");
 		authorizeUrl = authorizeUrl + "&user_oauth_approval=true";
-		ResponseEntity<Void> response = serverRunning.postForStatus(authorizeUrl, headers,
+		ResponseEntity<Void> response = http.postForStatus(authorizeUrl, headers,
 				new LinkedMultiValueMap<String, String>());
 		assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
 	}
@@ -245,7 +245,7 @@ public abstract class AbstractAuthorizationCodeProviderTests extends AbstractInt
 
 		AccessTokenRequest request = context.getAccessTokenRequest();
 		assertNotNull(request.getAuthorizationCode());
-		assertEquals(HttpStatus.OK, serverRunning.getStatusCode("/admin/beans"));
+		assertEquals(HttpStatus.OK, http.getStatusCode("/admin/beans"));
 
 	}
 
@@ -259,7 +259,7 @@ public abstract class AbstractAuthorizationCodeProviderTests extends AbstractInt
 		String redirectUri = "http://anywhere?key=value";
 		String clientId = "my-client-with-registered-redirect";
 
-		UriBuilder uri = serverRunning.buildUri("/oauth/authorize").queryParam("response_type", "code")
+		UriBuilder uri = http.buildUri(authorizePath()).queryParam("response_type", "code")
 				.queryParam("state", "mystateid").queryParam("scope", scope);
 		if (clientId != null) {
 			uri.queryParam("client_id", clientId);
@@ -267,7 +267,7 @@ public abstract class AbstractAuthorizationCodeProviderTests extends AbstractInt
 		if (redirectUri != null) {
 			uri.queryParam("redirect_uri", redirectUri);
 		}
-		ResponseEntity<String> response = serverRunning.getForString(uri.pattern(), headers, uri.params());
+		ResponseEntity<String> response = http.getForString(uri.pattern(), headers, uri.params());
 		assertEquals(HttpStatus.FOUND, response.getStatusCode());
 		String location = response.getHeaders().getLocation().toString();
 		assertTrue(location.startsWith("http://anywhere"));
@@ -276,28 +276,12 @@ public abstract class AbstractAuthorizationCodeProviderTests extends AbstractInt
 	}
 
 	@Test
-	@OAuth2ContextConfiguration(resource = MyClientWithRegisteredRedirect.class, initialize = false)
-	public void testInsufficientScopeInResourceRequest() throws Exception {
-		AuthorizationCodeResourceDetails resource = (AuthorizationCodeResourceDetails) context.getResource();
-		resource.setScope(Arrays.asList("trust"));
-		approveAccessTokenGrant("http://anywhere?key=value", true);
-		assertNotNull(context.getAccessToken());
-		try {
-			serverRunning.getForString("/admin/beans");
-			fail("Should have thrown exception");
-		}
-		catch (HttpClientErrorException ex) {
-			assertEquals(HttpStatus.FORBIDDEN, ex.getStatusCode());
-		}
-	}
-
-	@Test
 	public void testInvalidAccessToken() throws Exception {
 
 		// now make sure an unauthorized request fails the right way.
 		HttpHeaders headers = new HttpHeaders();
 		headers.set("Authorization", String.format("%s %s", OAuth2AccessToken.BEARER_TYPE, "FOO"));
-		ResponseEntity<String> response = serverRunning.getForString("/admin/beans", headers);
+		ResponseEntity<String> response = http.getForString("/admin/beans", headers);
 		assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
 
 		String authenticate = response.getHeaders().getFirst("WWW-Authenticate");
@@ -338,7 +322,7 @@ public abstract class AbstractAuthorizationCodeProviderTests extends AbstractInt
 
 	private ResponseEntity<String> attemptToGetConfirmationPage(String clientId, String redirectUri) {
 		HttpHeaders headers = getAuthenticatedHeaders();
-		return serverRunning.getForString(getAuthorizeUrl(clientId, redirectUri, "read"), headers);
+		return http.getForString(getAuthorizeUrl(clientId, redirectUri, "read"), headers);
 	}
 
 	private HttpHeaders getAuthenticatedHeaders() {
@@ -352,7 +336,7 @@ public abstract class AbstractAuthorizationCodeProviderTests extends AbstractInt
 	}
 
 	private String getAuthorizeUrl(String clientId, String redirectUri, String scope) {
-		UriBuilder uri = serverRunning.buildUri("/oauth/authorize").queryParam("response_type", "code")
+		UriBuilder uri = http.buildUri(authorizePath()).queryParam("response_type", "code")
 				.queryParam("state", "mystateid").queryParam("scope", scope);
 		if (clientId != null) {
 			uri.queryParam("client_id", clientId);
@@ -363,7 +347,7 @@ public abstract class AbstractAuthorizationCodeProviderTests extends AbstractInt
 		return uri.build().toString();
 	}
 
-	private void approveAccessTokenGrant(String currentUri, boolean approved) {
+	protected void approveAccessTokenGrant(String currentUri, boolean approved) {
 
 		AccessTokenRequest request = context.getAccessTokenRequest();
 		request.setHeaders(getAuthenticatedHeaders());
@@ -406,19 +390,19 @@ public abstract class AbstractAuthorizationCodeProviderTests extends AbstractInt
 
 	}
 
-	static class MyTrustedClient extends AuthorizationCodeResourceDetails {
+	protected static class MyTrustedClient extends AuthorizationCodeResourceDetails {
 		public MyTrustedClient(Object target) {
 			super();
 			setClientId("my-trusted-client");
 			setScope(Arrays.asList("read"));
 			setId(getClientId());
 			AbstractAuthorizationCodeProviderTests test = (AbstractAuthorizationCodeProviderTests) target;
-			setAccessTokenUri(test.serverRunning.getUrl("/oauth/token"));
-			setUserAuthorizationUri(test.serverRunning.getUrl("/oauth/authorize"));
+			setAccessTokenUri(test.http.getUrl(tokenPath()));
+			setUserAuthorizationUri(test.http.getUrl(authorizePath()));
 		}
 	}
 
-	static class MyClientWithRegisteredRedirect extends MyTrustedClient {
+	protected static class MyClientWithRegisteredRedirect extends MyTrustedClient {
 		public MyClientWithRegisteredRedirect(Object target) {
 			super(target);
 			setClientId("my-client-with-registered-redirect");

@@ -1,9 +1,9 @@
 package demo;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -15,10 +15,6 @@ import org.springframework.security.oauth2.config.annotation.web.configuration.E
 import org.springframework.security.oauth2.config.annotation.web.configuration.ResourceServerConfigurerAdapter;
 import org.springframework.security.oauth2.config.annotation.web.configurers.OAuth2AuthorizationServerConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.OAuth2ResourceServerConfigurer;
-import org.springframework.security.oauth2.provider.ClientDetailsService;
-import org.springframework.security.oauth2.provider.token.AuthorizationServerTokenServices;
-import org.springframework.security.oauth2.provider.token.JwtTokenServices;
-import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -36,25 +32,17 @@ public class Application {
 	public String home() {
 		return "Hello World";
 	}
-	
-	@Bean
-	public JwtTokenServices tokenServices(ClientDetailsService clientDetails) {
-		JwtTokenServices tokenServices = new JwtTokenServices();
-		tokenServices.setClientDetailsService(clientDetails);
-		return tokenServices;
-	}
 
 	@Configuration
 	@EnableResourceServer
 	protected static class ResourceServer extends ResourceServerConfigurerAdapter {
-		
-		@Autowired
-		private ResourceServerTokenServices tokenServices;
 
 		@Override
 		public void configure(HttpSecurity http) throws Exception {
 			// @formatter:off
 			http
+				// Just for laughs, apply OAuth protection to only 2 resources
+				.requestMatchers().antMatchers("/","/admin/beans").and()
 				.authorizeRequests()
 				.anyRequest().access("#oauth2.hasScope('read')");
 			// @formatter:on
@@ -62,7 +50,7 @@ public class Application {
 
 		@Override
 		public void configure(OAuth2ResourceServerConfigurer resources) throws Exception {
-			resources.resourceId("sparklr").tokenServices(tokenServices);
+			resources.resourceId("sparklr");
 		}
 
 	}
@@ -71,15 +59,26 @@ public class Application {
 	@EnableAuthorizationServer
 	protected static class OAuth2Config extends AuthorizationServerConfigurerAdapter {
 
-		@Autowired
-		private AuthorizationServerTokenServices tokenServices;
+		@Value("${oauth.paths.token:/oauth/authorize}")
+		private String tokenPath = "/oauth/token";
 
+		@Value("${oauth.paths.authorize:/oauth/authorize}")
+		private String authorizePath = "/oauth/authorize";
+
+		@Value("${oauth.paths.confirm:/oauth/confirm_access}")
+		private String confirmPath = "/oauth/confirm_access";
+		
 		@Autowired
 		private AuthenticationManager authenticationManager;
 
 		@Override
 		public void configure(OAuth2AuthorizationServerConfigurer oauthServer) throws Exception {
-			oauthServer.authenticationManager(authenticationManager).tokenService(tokenServices);
+			// @formatter:off	
+			oauthServer.authenticationManager(authenticationManager)
+				.pathMapping("/oauth/confirm_access", confirmPath)
+				.pathMapping("/oauth/token", tokenPath)
+				.pathMapping("/oauth/authorize", authorizePath);
+			// @formatter:on
 		}
 
 		@Override
@@ -103,7 +102,7 @@ public class Application {
 		        .withClient("my-client-with-secret")
 		            .authorizedGrantTypes("client_credentials", "password")
 		            .authorities("ROLE_CLIENT")
-		            .scopes("read", "write")
+		            .scopes("read")
 		            .resourceIds("sparklr")
 		            .secret("secret");
 		// @formatter:on
