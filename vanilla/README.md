@@ -1,7 +1,7 @@
 This project shows what you can do with the minimum configuration to
 set up an Authorization Server and Resource Server. 
 
-For the Authorization Server you need to `@EnableAuthorizatioServer`
+For the Authorization Server you need to `@EnableAuthorizationServer`
 and also configure at least one client registration
 (`OAuth2ClientDetails`). You can see this is the bulk of
 `Application.java`. 

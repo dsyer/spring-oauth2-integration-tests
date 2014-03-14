@@ -11,13 +11,13 @@ import org.junit.Test;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.codec.Base64;
 import org.springframework.security.oauth2.common.DefaultOAuth2AccessToken;
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
 /**
- * @author Ryan Heaton
  * @author Dave Syer
  */
 public abstract class AbstractRefreshTokenSupportTests extends AbstractIntegrationTests {
@@ -34,7 +34,7 @@ public abstract class AbstractRefreshTokenSupportTests extends AbstractIntegrati
 		assertNotNull(accessToken.getRefreshToken());
 		OAuth2AccessToken newAccessToken = refreshAccessToken(accessToken.getRefreshToken().getValue());
 		assertFalse(newAccessToken.getValue().equals(accessToken.getValue()));
-		
+
 		verifyAccessTokens(accessToken, newAccessToken);
 
 	}
@@ -49,7 +49,7 @@ public abstract class AbstractRefreshTokenSupportTests extends AbstractIntegrati
 	protected void verifyTokenResponse(String accessToken, HttpStatus status) {
 		HttpHeaders headers = new HttpHeaders();
 		headers.set("Authorization", String.format("%s %s", OAuth2AccessToken.BEARER_TYPE, accessToken));
-		assertEquals(status, http.getStatusCode("/admin/beans", headers));		
+		assertEquals(status, http.getStatusCode("/admin/beans", headers));
 	}
 
 	private OAuth2AccessToken refreshAccessToken(String refreshToken) {
@@ -59,11 +59,13 @@ public abstract class AbstractRefreshTokenSupportTests extends AbstractIntegrati
 		formData.add("client_id", "my-trusted-client");
 		formData.add("refresh_token", refreshToken);
 		formData.add("scope", "read");
+		HttpHeaders headers = getTokenHeaders("my-trusted-client");
 
 		@SuppressWarnings("rawtypes")
-		ResponseEntity<Map> response = http.postForMap(tokenPath(), formData);
+		ResponseEntity<Map> response = http.postForMap(tokenPath(), headers, formData);
 		assertEquals(HttpStatus.OK, response.getStatusCode());
-		assertTrue("Wrong cache control: " + response.getHeaders().getFirst("Cache-Control"), response.getHeaders().getFirst("Cache-Control").contains("no-store"));
+		assertTrue("Wrong cache control: " + response.getHeaders().getFirst("Cache-Control"), response.getHeaders()
+				.getFirst("Cache-Control").contains("no-store"));
 		@SuppressWarnings("unchecked")
 		OAuth2AccessToken newAccessToken = DefaultOAuth2AccessToken.valueOf(response.getBody());
 		return newAccessToken;
@@ -72,15 +74,24 @@ public abstract class AbstractRefreshTokenSupportTests extends AbstractIntegrati
 
 	private OAuth2AccessToken getAccessToken(String scope, String clientId) throws Exception {
 		MultiValueMap<String, String> formData = getTokenFormData(scope, clientId);
-
+		HttpHeaders headers = getTokenHeaders(clientId);
 		@SuppressWarnings("rawtypes")
-		ResponseEntity<Map> response = http.postForMap(tokenPath(), formData);
+		ResponseEntity<Map> response = http.postForMap(tokenPath(), headers, formData);
 		assertEquals(HttpStatus.OK, response.getStatusCode());
-		assertTrue("Wrong cache control: " + response.getHeaders().getFirst("Cache-Control"), response.getHeaders().getFirst("Cache-Control").contains("no-store"));
+		assertTrue("Wrong cache control: " + response.getHeaders().getFirst("Cache-Control"), response.getHeaders()
+				.getFirst("Cache-Control").contains("no-store"));
 
 		@SuppressWarnings("unchecked")
 		OAuth2AccessToken accessToken = DefaultOAuth2AccessToken.valueOf(response.getBody());
 		return accessToken;
+	}
+
+	private HttpHeaders getTokenHeaders(String clientId) {
+		HttpHeaders headers = new HttpHeaders();
+		if (clientId != null) {
+			headers.set("Authorization", "Basic " + new String(Base64.encode((clientId + ":").getBytes())));
+		}
+		return headers ;
 	}
 
 	private MultiValueMap<String, String> getTokenFormData(String scope, String clientId) {

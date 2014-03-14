@@ -12,6 +12,7 @@
       <module>common</module>
       <module>vanilla</module>
       <module>mappings</module>
+      <module>form</module>
       <module>jwt</module>
     </modules>
 
