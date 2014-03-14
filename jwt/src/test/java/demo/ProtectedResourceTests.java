@@ -21,28 +21,14 @@ import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
+import sparklr.common.AbstractProtectedResourceTests;
+
 /**
  * @author Dave Syer
  *
  */
 @SpringApplicationConfiguration(classes = Application.class)
-public class ProtectedResourceTests extends AbstractIntegrationTests {
-
-	@Test
-	public void testHomePageIsProtected() throws Exception {
-		ResponseEntity<String> response = serverRunning.getForString("/");
-		assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
-		assertTrue("Wrong header: " + response.getHeaders(), response.getHeaders().getFirst("WWW-Authenticate")
-				.startsWith("Bearer realm="));
-	}
-
-	@Test
-	public void testBeansResourceIsProtected() throws Exception {
-		ResponseEntity<String> response = serverRunning.getForString("/admin/beans");
-		assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
-		assertTrue("Wrong header: " + response.getHeaders(), response.getHeaders().getFirst("WWW-Authenticate")
-				.startsWith("Bearer realm="));
-	}
+public class ProtectedResourceTests extends AbstractProtectedResourceTests {
 
 	@Test
 	public void testDumpResourceIsProtected() throws Exception {
@@ -51,11 +37,5 @@ public class ProtectedResourceTests extends AbstractIntegrationTests {
 		assertTrue("Wrong header: " + response.getHeaders(), response.getHeaders().getFirst("WWW-Authenticate")
 				.startsWith("Basic realm="));
 	}
-
-	@Test
-	public void testHealthResourceIsOpen() throws Exception {
-		assertEquals(HttpStatus.OK, serverRunning.getStatusCode("/admin/health"));
-	}
-
 
 }

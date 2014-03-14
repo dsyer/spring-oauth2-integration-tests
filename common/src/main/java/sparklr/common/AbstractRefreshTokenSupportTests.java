@@ -1,4 +1,4 @@
-package demo;
+package sparklr.common;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -8,7 +8,6 @@ import static org.junit.Assert.assertTrue;
 import java.util.Map;
 
 import org.junit.Test;
-import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,8 +20,7 @@ import org.springframework.util.MultiValueMap;
  * @author Ryan Heaton
  * @author Dave Syer
  */
-@SpringApplicationConfiguration(classes=Application.class)
-public class RefreshTokenSupportTests extends AbstractIntegrationTests {
+public abstract class AbstractRefreshTokenSupportTests extends AbstractIntegrationTests {
 
 	/**
 	 * tests a happy-day flow of the refresh token provider.
@@ -30,21 +28,25 @@ public class RefreshTokenSupportTests extends AbstractIntegrationTests {
 	@Test
 	public void testHappyDay() throws Exception {
 
-		OAuth2AccessToken accessToken = getAccessToken("read", "my-trusted-client");
+		OAuth2AccessToken accessToken = getAccessToken("read write", "my-trusted-client");
 
 		// now use the refresh token to get a new access token.
 		assertNotNull(accessToken.getRefreshToken());
 		OAuth2AccessToken newAccessToken = refreshAccessToken(accessToken.getRefreshToken().getValue());
 		assertFalse(newAccessToken.getValue().equals(accessToken.getValue()));
-
-		// make sure the new access token can be used.
-		verifyTokenResponse(newAccessToken.getValue(), HttpStatus.OK);
-		// make sure the old access token isn't valid anymore.
-		verifyTokenResponse(accessToken.getValue(), HttpStatus.UNAUTHORIZED);
+		
+		verifyAccessTokens(accessToken, newAccessToken);
 
 	}
 
-	private void verifyTokenResponse(String accessToken, HttpStatus status) {
+	protected void verifyAccessTokens(OAuth2AccessToken oldAccessToken, OAuth2AccessToken newAccessToken) {
+		// make sure the new access token can be used.
+		verifyTokenResponse(newAccessToken.getValue(), HttpStatus.OK);
+		// make sure the old access token isn't valid anymore.
+		verifyTokenResponse(oldAccessToken.getValue(), HttpStatus.UNAUTHORIZED);
+	}
+
+	protected void verifyTokenResponse(String accessToken, HttpStatus status) {
 		HttpHeaders headers = new HttpHeaders();
 		headers.set("Authorization", String.format("%s %s", OAuth2AccessToken.BEARER_TYPE, accessToken));
 		assertEquals(status, serverRunning.getStatusCode("/admin/beans", headers));		
@@ -56,6 +58,7 @@ public class RefreshTokenSupportTests extends AbstractIntegrationTests {
 		formData.add("grant_type", "refresh_token");
 		formData.add("client_id", "my-trusted-client");
 		formData.add("refresh_token", refreshToken);
+		formData.add("scope", "read");
 
 		@SuppressWarnings("rawtypes")
 		ResponseEntity<Map> response = serverRunning.postForMap("/oauth/token", formData);

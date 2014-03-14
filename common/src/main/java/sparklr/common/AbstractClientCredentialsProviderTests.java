@@ -1,4 +1,4 @@
-package demo;
+package sparklr.common;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -10,7 +10,6 @@ import java.io.IOException;
 import java.util.Arrays;
 
 import org.junit.Test;
-import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.client.ClientHttpResponse;
@@ -26,8 +25,7 @@ import org.springframework.web.client.ResponseErrorHandler;
  * @author Ryan Heaton
  * @author Dave Syer
  */
-@SpringApplicationConfiguration(classes=Application.class)
-public class ClientCredentialsProviderTests extends AbstractIntegrationTests {
+public abstract class AbstractClientCredentialsProviderTests extends AbstractIntegrationTests {
 
 	private ClientCredentialsResourceDetails resource;
 
@@ -126,7 +124,7 @@ public class ClientCredentialsProviderTests extends AbstractIntegrationTests {
 			setClientSecret("secret");
 			setScope(Arrays.asList("read"));
 			setId(getClientId());
-			ClientCredentialsProviderTests test = (ClientCredentialsProviderTests) target;
+			AbstractClientCredentialsProviderTests test = (AbstractClientCredentialsProviderTests) target;
 			setAccessTokenUri(test.serverRunning.getUrl("/oauth/token"));
 			test.resource = this;
 		}
@@ -144,7 +142,7 @@ public class ClientCredentialsProviderTests extends AbstractIntegrationTests {
 			setClientId("my-client-with-secret");
 			setClientSecret("secret");
 			setId(getClientId());
-			ClientCredentialsProviderTests test = (ClientCredentialsProviderTests) target;
+			AbstractClientCredentialsProviderTests test = (AbstractClientCredentialsProviderTests) target;
 			setAccessTokenUri(test.serverRunning.getUrl("/oauth/token"));
 		}
 	}

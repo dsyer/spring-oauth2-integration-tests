@@ -1,4 +1,4 @@
-package demo;
+package sparklr.common;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -10,7 +10,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.junit.Test;
-import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -33,8 +32,7 @@ import org.springframework.web.client.ResponseExtractor;
  * @author Ryan Heaton
  * @author Dave Syer
  */
-@SpringApplicationConfiguration(classes=Application.class)
-public class ResourceOwnerPasswordProviderTests extends AbstractIntegrationTests {
+public abstract class AbstractResourceOwnerPasswordProviderTests extends AbstractIntegrationTests {
 
 	private ClientHttpResponse tokenEndpointResponse;
 
@@ -184,7 +182,7 @@ public class ResourceOwnerPasswordProviderTests extends AbstractIntegrationTests
 			setId(getClientId());
 			setUsername("user");
 			setPassword("password");
-			ResourceOwnerPasswordProviderTests test = (ResourceOwnerPasswordProviderTests) target;
+			AbstractResourceOwnerPasswordProviderTests test = (AbstractResourceOwnerPasswordProviderTests) target;
 			setAccessTokenUri(test.serverRunning.getUrl("/oauth/token"));
 		}
 	}

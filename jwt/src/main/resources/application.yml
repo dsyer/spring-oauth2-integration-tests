@@ -3,5 +3,3 @@ management:
 security:
   user:
     password: password
-
-debug: true

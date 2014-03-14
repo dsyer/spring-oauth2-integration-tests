@@ -1,10 +1,9 @@
-package demo;
+package sparklr.common;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
 import org.junit.Test;
-import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.crypto.codec.Base64;
 import org.springframework.security.oauth2.client.resource.UserRedirectRequiredException;
@@ -16,8 +15,7 @@ import org.springframework.security.oauth2.common.util.OAuth2Utils;
  * @author Ryan Heaton
  * @author Dave Syer
  */
-@SpringApplicationConfiguration(classes=Application.class)
-public class ImplicitProviderTests extends AbstractIntegrationTests {
+public abstract class AbstractImplicitProviderTests extends AbstractIntegrationTests {
 
 	@Test
 	@OAuth2ContextConfiguration(resource = NonAutoApproveImplicit.class, initialize = false)
@@ -45,7 +43,7 @@ public class ImplicitProviderTests extends AbstractIntegrationTests {
 			setClientId("my-trusted-client");
 			setId(getClientId());
 			setPreEstablishedRedirectUri("http://anywhere");
-			ImplicitProviderTests test = (ImplicitProviderTests) target;
+			AbstractImplicitProviderTests test = (AbstractImplicitProviderTests) target;
 			setAccessTokenUri(test.serverRunning.getUrl("/oauth/authorize"));
 			setUserAuthorizationUri(test.serverRunning.getUrl("/oauth/authorize"));
 		}

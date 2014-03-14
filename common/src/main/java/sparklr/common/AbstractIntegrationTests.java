@@ -11,13 +11,10 @@
  * specific language governing permissions and limitations under the License.
  */
 
-package demo;
+package sparklr.common;
 
 import org.junit.Rule;
-import org.junit.rules.MethodRule;
 import org.junit.runner.RunWith;
-import org.junit.runners.model.FrameworkMethod;
-import org.junit.runners.model.Statement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.embedded.EmbeddedWebApplicationContext;
 import org.springframework.boot.test.IntegrationTest;
@@ -28,19 +25,16 @@ import org.springframework.security.oauth2.client.test.OAuth2ContextSetup;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 
-import demo.AbstractIntegrationTests.TestConfiguration;
+import sparklr.common.AbstractIntegrationTests.TestConfiguration;
 
 @SpringApplicationConfiguration(classes=TestConfiguration.class, inheritLocations=true)
 @RunWith(SpringJUnit4ClassRunner.class)
 @WebAppConfiguration
 @IntegrationTest
-public abstract class AbstractIntegrationTests {
+public abstract class AbstractIntegrationTests implements PortHolder {
 
 	@Rule
-	public MethodRule portSetter = new PortSetter();
-	
-	@Rule
-	public ServerRunning serverRunning = ServerRunning.isRunning();
+	public HttpTestUtils serverRunning = HttpTestUtils.standard().setPortHolder(this);
 	
 	@Rule
 	public OAuth2ContextSetup context = OAuth2ContextSetup.standard(serverRunning);
@@ -48,23 +42,15 @@ public abstract class AbstractIntegrationTests {
 	@Autowired
 	private EmbeddedWebApplicationContext server;
 	
-	@Configuration
-	@PropertySource("classpath:test.properties")
-	protected static class TestConfiguration {
-		
+	@Override
+	public int getPort() {
+		return server==null ? 8080 : server.getEmbeddedServletContainer().getPort();
 	}
 	
-	public class PortSetter implements MethodRule {
-		@Override
-		public Statement apply(final Statement base, FrameworkMethod method, Object target) {
-			serverRunning.setPort(server.getEmbeddedServletContainer().getPort());
-			return new Statement() {
-				@Override
-				public void evaluate() throws Throwable {
-					base.evaluate();
-				}
-			};
-		}
+	@Configuration
+	@PropertySource(value="classpath:test.properties", ignoreResourceNotFound=true)
+	protected static class TestConfiguration {
+		
 	}
 
 }

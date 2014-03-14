@@ -10,7 +10,7 @@
  * an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
  * specific language governing permissions and limitations under the License.
  */
-package demo;
+package sparklr.common;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -26,7 +26,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.aop.framework.Advised;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -52,14 +51,13 @@ import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.ResponseErrorHandler;
 import org.springframework.web.client.ResponseExtractor;
 
-import demo.ServerRunning.UriBuilder;
+import sparklr.common.HttpTestUtils.UriBuilder;
 
 /**
  * @author Dave Syer
  * @author Luke Taylor
  */
-@SpringApplicationConfiguration(classes = Application.class)
-public class AuthorizationCodeProviderTests extends AbstractIntegrationTests {
+public abstract class AbstractAuthorizationCodeProviderTests extends AbstractIntegrationTests {
 
 	@Autowired
 	private TokenStore tokenStore;
@@ -414,7 +412,7 @@ public class AuthorizationCodeProviderTests extends AbstractIntegrationTests {
 			setClientId("my-trusted-client");
 			setScope(Arrays.asList("read"));
 			setId(getClientId());
-			AuthorizationCodeProviderTests test = (AuthorizationCodeProviderTests) target;
+			AbstractAuthorizationCodeProviderTests test = (AbstractAuthorizationCodeProviderTests) target;
 			setAccessTokenUri(test.serverRunning.getUrl("/oauth/token"));
 			setUserAuthorizationUri(test.serverRunning.getUrl("/oauth/authorize"));
 		}

@@ -1,17 +1,14 @@
-package demo;
+package sparklr.common;
 
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.junit.Assume;
-import org.junit.internal.AssumptionViolatedException;
 import org.junit.rules.MethodRule;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.Statement;
@@ -31,38 +28,16 @@ import org.springframework.web.util.UriTemplate;
 
 /**
  * <p>
- * A rule that prevents integration tests from failing if the server application is not running or not accessible. If
- * the server is not running in the background all the tests here will simply be skipped because of a violated
- * assumption (showing as successful). Usage:
+ * A rule that provides HTTP connectivity to test cases on the assumption that the server is available when test methods
+ * fire.
  * </p>
- * 
- * <pre>
- * &#064;Rule public static BrokerRunning brokerIsRunning = BrokerRunning.isRunning();
- * 
- * &#064;Test public void testSendAndReceive() throws Exception { // ... test using RabbitTemplate etc. }
- * </pre>
- * <p>
- * The rule can be declared as static so that it only has to check once for all tests in the enclosing test case, but
- * there isn't a lot of overhead in making it non-static.
- * </p>
- * 
- * @see Assume
- * @see AssumptionViolatedException
  * 
  * @author Dave Syer
  * 
  */
-public class ServerRunning implements MethodRule, RestTemplateHolder {
+public class HttpTestUtils implements MethodRule, RestTemplateHolder {
 
-	private static Log logger = LogFactory.getLog(ServerRunning.class);
-
-	// Static so that we only test once on failure: speeds up test suite
-	private static Map<Integer, Boolean> serverOnline = new HashMap<Integer, Boolean>();
-
-	// Static so that we only test once on failure
-	private static Map<Integer, Boolean> serverOffline = new HashMap<Integer, Boolean>();
-
-	private final boolean assumeOnline;
+	private static Log logger = LogFactory.getLog(HttpTestUtils.class);
 
 	private static int DEFAULT_PORT = 8080;
 
@@ -74,91 +49,69 @@ public class ServerRunning implements MethodRule, RestTemplateHolder {
 
 	private RestOperations client;
 
-	/**
-	 * @return a new rule that assumes an existing running broker
-	 */
-	public static ServerRunning isRunning() {
-		return new ServerRunning(true);
-	}
+	private PortHolder portHolder;
 
 	/**
-	 * @return a new rule that assumes there is no existing broker
+	 * @return a new rule that sets up default host and port etc.
 	 */
-	public static ServerRunning isNotRunning() {
-		return new ServerRunning(false);
+	public static HttpTestUtils standard() {
+		return new HttpTestUtils();
 	}
 
-	private ServerRunning(boolean assumeOnline) {
-		this.assumeOnline = assumeOnline;
+	private HttpTestUtils() {
 		setPort(DEFAULT_PORT);
 	}
 
 	/**
 	 * @param port the port to set
 	 */
-	public void setPort(int port) {
+	public HttpTestUtils setPort(int port) {
 		this.port = port;
-		if (!serverOffline.containsKey(port)) {
-			serverOffline.put(port, true);
-		}
-		if (!serverOnline.containsKey(port)) {
-			serverOnline.put(port, true);
-		}
-		if (client==null) {
+		if (client == null) {
 			client = createRestTemplate();
 		}
+		return this;
+	}
+
+	/**
+	 * @param port the port holder to set
+	 */
+	public HttpTestUtils setPortHolder(PortHolder port) {
+		this.portHolder = port;
+		return this;
 	}
 
 	/**
 	 * @param hostName the hostName to set
 	 */
-	public void setHostName(String hostName) {
+	public HttpTestUtils setHostName(String hostName) {
 		this.hostName = hostName;
+		return this;
 	}
 
 	public Statement apply(final Statement base, FrameworkMethod method, Object target) {
-
-		// Check at the beginning, so this can be used as a static field
-		if (assumeOnline) {
-			Assume.assumeTrue(serverOnline.get(port));
-		}
-		else {
-			Assume.assumeTrue(serverOffline.get(port));
+		
+		if (portHolder!=null) {
+			setPort(portHolder.getPort());
 		}
 
 		RestTemplate client = new RestTemplate();
 		boolean followRedirects = HttpURLConnection.getFollowRedirects();
 		HttpURLConnection.setFollowRedirects(false);
-		boolean online = false;
 		try {
 			client.getForEntity(new UriTemplate(getUrl("/admin/info")).toString(), String.class);
-			online = true;
 			logger.info("Basic connectivity test passed");
 		}
 		catch (RestClientException e) {
 			logger.warn(String.format(
 					"Not executing tests because basic connectivity test failed for hostName=%s, port=%d", hostName,
 					port), e);
-			if (assumeOnline) {
-				Assume.assumeNoException(e);
-			}
 		}
 		finally {
 			HttpURLConnection.setFollowRedirects(followRedirects);
-			if (online) {
-				serverOffline.put(port, false);
-				if (!assumeOnline) {
-					Assume.assumeTrue(serverOffline.get(port));
-				}
-
-			}
-			else {
-				serverOnline.put(port, false);
-			}
 		}
 
 		return new Statement() {
-
 			@Override
 			public void evaluate() throws Throwable {
 				base.evaluate();
