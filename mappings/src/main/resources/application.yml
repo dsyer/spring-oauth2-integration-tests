@@ -1,3 +1,6 @@
+spring:
+  application:
+    name: mappings
 management:
   context_path: /admin
 security:

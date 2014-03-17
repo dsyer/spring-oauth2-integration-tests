@@ -1,3 +1,6 @@
+spring:
+  application:
+    name: jwt
 management:
   context_path: /admin
 security:
