@@ -14,6 +14,7 @@
       <module>mappings</module>
       <module>form</module>
       <module>jwt</module>
+      <module>approval</module>
       <module>client</module>
     </modules>
 
