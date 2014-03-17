@@ -62,6 +62,11 @@ public class CombinedApplication {
 		return Arrays.asList(Collections.<String, Object> singletonMap("message", "Hello World"));
 	}
 
+	@RequestMapping("/admin/info")
+	public Map<String, Object> info() {
+		return Collections.<String, Object> emptyMap();
+	}
+
 	@Configuration
 	@EnableAuthorizationServer
 	protected static class AuthorizationServerConfiguration extends AuthorizationServerConfigurerAdapter {
