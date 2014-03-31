@@ -16,6 +16,15 @@ The apps are in subdirectories:
 
 * mappings - changes the default values for the endpoint paths and the
   protected resource paths
+  
+* approval - an auth server with granular approvals (per scope)
+
+* form - an auth server that accepts form-based client authentication
+
+* client - a simple client app
+
+The client is wired to the other servers as long as they run on the
+default port of 8080. 
 
 
 ## Building and Running
@@ -55,3 +64,19 @@ $ TOKEN=b561ff06-4259-466e-92d8-781db1a5190
 $ curl -H "Authorization: Bearer $TOKEN" localhost:8080/
 Hello World
 ```
+
+## Running the Client App
+
+To test in a browser you can run one of the servers (see above) and
+the client on a different port (it runs on 8081 by default).
+
+```
+$ cd client
+$ mvn package
+$ java -jar target/*.jar 
+...
+<app starts and listens on port 8081>
+```
+
+Go to http://localhost:8081 and follow the authorization process (the
+username and password are `user` and `password`).
