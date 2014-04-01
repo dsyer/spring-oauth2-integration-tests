@@ -22,10 +22,7 @@ import static org.junit.Assert.fail;
 import java.io.IOException;
 import java.util.Arrays;
 
-import org.junit.Before;
 import org.junit.Test;
-import org.springframework.aop.framework.Advised;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -42,8 +39,6 @@ import org.springframework.security.oauth2.client.token.grant.code.Authorization
 import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.common.exceptions.RedirectMismatchException;
 import org.springframework.security.oauth2.common.util.OAuth2Utils;
-import org.springframework.security.oauth2.provider.token.InMemoryTokenStore;
-import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.client.DefaultResponseErrorHandler;
 import org.springframework.web.client.HttpClientErrorException;
@@ -59,17 +54,9 @@ import sparklr.common.HttpTestUtils.UriBuilder;
  */
 public abstract class AbstractAuthorizationCodeProviderTests extends AbstractIntegrationTests {
 
-	@Autowired
-	private TokenStore tokenStore;
-
 	private AuthorizationCodeAccessTokenProvider accessTokenProvider;
 
 	private ClientHttpResponse tokenEndpointResponse;
-
-	@Before
-	public void init() throws Exception {
-		((InMemoryTokenStore) ((Advised) tokenStore).getTargetSource().getTarget()).clear();
-	}
 
 	@BeforeOAuth2Context
 	public void setupAccessTokenProvider() {

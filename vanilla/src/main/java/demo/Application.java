@@ -36,7 +36,7 @@ public class Application {
 
 		@Autowired
 		private AuthenticationManager authenticationManager;
-
+		
 		@Override
 		public void configure(OAuth2AuthorizationServerConfigurer oauthServer) throws Exception {
 			oauthServer.authenticationManager(authenticationManager);

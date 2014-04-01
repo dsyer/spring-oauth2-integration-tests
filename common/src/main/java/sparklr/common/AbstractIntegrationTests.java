@@ -13,8 +13,12 @@
 
 package sparklr.common;
 
+import javax.sql.DataSource;
+
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.runner.RunWith;
+import org.springframework.aop.framework.Advised;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.embedded.EmbeddedWebApplicationContext;
@@ -22,7 +26,11 @@ import org.springframework.boot.test.IntegrationTest;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.oauth2.client.test.OAuth2ContextSetup;
+import org.springframework.security.oauth2.provider.token.InMemoryTokenStore;
+import org.springframework.security.oauth2.provider.token.JdbcTokenStore;
+import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 
@@ -47,9 +55,39 @@ public abstract class AbstractIntegrationTests implements PortHolder {
 	@Autowired
 	private EmbeddedWebApplicationContext server;
 
+	@Autowired
+	private TokenStore tokenStore;
+	
+	@Autowired(required=false)
+	private DataSource dataSource;
+	
 	@Override
 	public int getPort() {
 		return server == null ? 8080 : server.getEmbeddedServletContainer().getPort();
+	}
+
+	@Before
+	public void init() throws Exception {
+		clear(tokenStore);
+	}
+
+	private void clear(TokenStore tokenStore) throws Exception {
+		if (tokenStore instanceof Advised) {
+			Advised advised = (Advised) tokenStore;
+			TokenStore target = (TokenStore) advised.getTargetSource().getTarget();
+			clear(target);
+			return;
+		}
+		if (tokenStore instanceof InMemoryTokenStore) {
+			((InMemoryTokenStore) tokenStore).clear();
+		}
+		if (tokenStore instanceof JdbcTokenStore) {
+			JdbcTemplate template = new JdbcTemplate(dataSource);
+			template.execute("delete from oauth_access_token");
+			template.execute("delete from oauth_refresh_token");
+			template.execute("delete from oauth_client_token");
+			template.execute("delete from oauth_code");
+		}
 	}
 
 	@Value("${oauth.paths.token:/oauth/token}")

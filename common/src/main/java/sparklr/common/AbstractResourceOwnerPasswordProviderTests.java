@@ -142,6 +142,27 @@ public abstract class AbstractResourceOwnerPasswordProviderTests extends Abstrac
 	}
 
 	@Test
+	@OAuth2ContextConfiguration(resource = NoSuchClient.class, initialize = false)
+	public void testNoSuchClient() throws Exception {
+		
+		// The error comes back as additional information because OAuth2AccessToken is so extensible!
+		try {
+			context.getAccessToken();
+		}
+		catch (Exception e) {
+			// assertEquals("invalid_client", e.getOAuth2ErrorCode());
+		}
+
+		assertEquals(HttpStatus.UNAUTHORIZED, tokenEndpointResponse.getStatusCode());
+
+		List<String> newCookies = tokenEndpointResponse.getHeaders().get("Set-Cookie");
+		if (newCookies != null && !newCookies.isEmpty()) {
+			fail("No cookies should be set. Found: " + newCookies.get(0) + ".");
+		}
+
+	}
+
+	@Test
 	@OAuth2ContextConfiguration(resource = InvalidGrantType.class, initialize = false)
 	public void testInvalidGrantType() throws Exception {
 		
@@ -219,7 +240,14 @@ public abstract class AbstractResourceOwnerPasswordProviderTests extends Abstrac
 	static class InvalidGrantType extends ResourceOwner {
 		public InvalidGrantType(Object target) {
 			super(target);
-			setClientId("my-untrusted-client-with-registered-redirect");
+			setClientId("my-client-with-registered-redirect");
+		}
+	}
+
+	static class NoSuchClient extends ResourceOwner {
+		public NoSuchClient(Object target) {
+			super(target);
+			setClientId("no-such-client");
 		}
 	}
 

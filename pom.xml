@@ -15,6 +15,7 @@
       <module>form</module>
       <module>jwt</module>
       <module>approval</module>
+      <module>jdbc</module>
       <module>client</module>
     </modules>
 
@@ -24,7 +25,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>1.0.0.BUILD-SNAPSHOT</version>
+		<version>1.0.1.BUILD-SNAPSHOT</version>
 	</parent>
 
     <dependencyManagement>

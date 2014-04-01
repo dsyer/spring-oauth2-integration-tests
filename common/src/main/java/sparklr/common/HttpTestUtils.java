@@ -12,7 +12,7 @@ import org.apache.commons.logging.LogFactory;
 import org.junit.rules.MethodRule;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.Statement;
-import org.springframework.boot.test.RestTemplates;
+import org.springframework.boot.test.TestRestTemplate;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -242,7 +242,7 @@ public class HttpTestUtils implements MethodRule, RestTemplateHolder {
 	}
 
 	public RestOperations createRestTemplate() {
-		RestTemplate client = RestTemplates.get();
+		RestTemplate client = new TestRestTemplate();
 		return client;
 	}
 
