@@ -1,6 +1,6 @@
 spring:
   application:
-    name: vanilla
+    name: jdbc
 management:
   context_path: /admin
 security:

@@ -78,5 +78,5 @@ $ java -jar target/*.jar
 <app starts and listens on port 8081>
 ```
 
-Go to http://localhost:8081 and follow the authorization process (the
+Go to http://localhost:8081/client and follow the authorization process (the
 username and password are `user` and `password`).

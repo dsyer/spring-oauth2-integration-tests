@@ -1,18 +1,18 @@
 This project shows what you can do with the minimum configuration to
-set up an Authorization Server and Resource Server. 
+set up an Authorization Server and Resource Server with JDBC backends. 
 
-For the Authorization Server you need to `@EnableAuthorizationServer`
-and also configure at least one client registration
-(`OAuth2ClientDetails`). You can see this is the bulk of
-`Application.java`. 
+The Authorization Server has JDBC backends for tokens (`TokenStore`),
+authorization codes (`AuthorizationCodeStore`) and user accounts
+(`UserDetailsManager`). Even with these services, a horizontally
+scaled Authorization Server needs to be fronted by a load balancer
+with sticky sessions (or else a Spring `SessionAttributeStore` should
+be provided in addition to wht you see here), if the stateful grant
+types are used (authorization code or implicit).
 
-An `AuthenticationManager` is created by Spring Boot (it has a single
-user, named "user", with password "password", per
-`application.yml`). It is needed in the Authorization Server to
-provide authentication for the Resource Owner Password grant type.
+An `AuthenticationManager` is created (it has a single user, named
+"user", with password "password", per `application.yml`). It is needed
+in the Authorization Server to provide authentication for the Resource
+Owner Password grant type.
 
-For the Resource Server all that is needed is the
-`@EnableResourceServer` annotation. By default it protects all
-resources that are not explicitly ignored and not exposed by the
-`AuthorizationEndpoint` (if there is an Authorization Server in the
-same application).
+The Resource Server shares the `TokenStore` with the AUthorization
+Server, but it doesn't need to know about the other services.

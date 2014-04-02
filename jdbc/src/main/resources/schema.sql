@@ -4,6 +4,11 @@ create table users (
   enabled boolean
 );
 
+create table authorities (
+  username varchar(256),
+  authority varchar(256)
+);
+
 create table oauth_client_details (
   client_id VARCHAR(256) PRIMARY KEY,
   resource_ids VARCHAR(256),
