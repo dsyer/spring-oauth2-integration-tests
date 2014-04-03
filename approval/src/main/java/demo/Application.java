@@ -15,9 +15,8 @@ import org.springframework.security.oauth2.config.annotation.web.configurers.OAu
 import org.springframework.security.oauth2.provider.ClientDetailsService;
 import org.springframework.security.oauth2.provider.OAuth2RequestFactory;
 import org.springframework.security.oauth2.provider.approval.ApprovalStore;
-import org.springframework.security.oauth2.provider.approval.ApprovalStoreUserApprovalHandler;
 import org.springframework.security.oauth2.provider.approval.TokenApprovalStore;
-import org.springframework.security.oauth2.provider.approval.UserApprovalHandler;
+import org.springframework.security.oauth2.provider.token.InMemoryTokenStore;
 import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -51,28 +50,21 @@ public class Application {
 		@Autowired
 		private ClientDetailsService clientDetailsService;
 
-		@Autowired
-		private TokenStore tokenStore;
-
 		@Override
 		public void configure(OAuth2AuthorizationServerConfigurer oauthServer) throws Exception {
-			oauthServer.authenticationManager(authenticationManager).userApprovalHandler(approvalHandler());
+			oauthServer.authenticationManager(authenticationManager);
 		}
-
-		@Bean
-		public UserApprovalHandler approvalHandler() throws Exception {
-			ApprovalStoreUserApprovalHandler handler = new ApprovalStoreUserApprovalHandler();
-			handler.setApprovalStore(approvalStore());
-			handler.setRequestFactory(requestFactory);
-			handler.setClientDetailsService(clientDetailsService);
-			return handler;
-		}
-
+		
 		@Bean
 		public ApprovalStore approvalStore() throws Exception {
 			TokenApprovalStore store = new TokenApprovalStore();
-			store.setTokenStore(tokenStore);
+			store.setTokenStore(tokenStore());
 			return store;
+		}
+		
+		@Bean
+		public TokenStore tokenStore() {
+			return new InMemoryTokenStore();
 		}
 
 		@Override

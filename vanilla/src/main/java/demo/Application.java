@@ -41,7 +41,7 @@ public class Application {
 		public void configure(OAuth2AuthorizationServerConfigurer oauthServer) throws Exception {
 			oauthServer.authenticationManager(authenticationManager);
 		}
-
+		
 		@Override
 		public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
 			// @formatter:off
