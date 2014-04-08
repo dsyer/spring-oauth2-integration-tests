@@ -56,7 +56,6 @@ public class CombinedApplication {
 		new SpringApplicationBuilder(ClientApplication.class, CombinedApplication.class).profiles("combined").run(args);
 	}
 
-	@SuppressWarnings("unchecked")
 	@RequestMapping("/admin/beans")
 	public List<Map<String, Object>> beans() {
 		return Arrays.asList(Collections.<String, Object> singletonMap("message", "Hello World"));

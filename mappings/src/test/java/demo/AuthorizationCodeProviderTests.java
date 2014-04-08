@@ -12,18 +12,17 @@
  */
 package demo;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.util.Arrays;
 
 import org.junit.Test;
 import org.springframework.boot.test.SpringApplicationConfiguration;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.oauth2.client.test.OAuth2ContextConfiguration;
 import org.springframework.security.oauth2.client.token.grant.code.AuthorizationCodeResourceDetails;
-import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.security.oauth2.common.exceptions.InsufficientScopeException;
 
 import sparklr.common.AbstractAuthorizationCodeProviderTests;
 
@@ -44,8 +43,8 @@ public class AuthorizationCodeProviderTests extends AbstractAuthorizationCodePro
 			http.getForString("/admin/beans");
 			fail("Should have thrown exception");
 		}
-		catch (HttpClientErrorException ex) {
-			assertEquals(HttpStatus.FORBIDDEN, ex.getStatusCode());
+		catch (InsufficientScopeException ex) {
+			assertTrue("Wrong summary: " + ex, ex.getSummary().contains("scope=\"read"));
 		}
 	}
 

@@ -11,7 +11,7 @@ import org.springframework.security.oauth2.config.annotation.configurers.ClientD
 import org.springframework.security.oauth2.config.annotation.web.configuration.AuthorizationServerConfigurerAdapter;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableAuthorizationServer;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
-import org.springframework.security.oauth2.config.annotation.web.configurers.OAuth2AuthorizationServerConfigurer;
+import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerSecurityConfigurer;
 import org.springframework.security.oauth2.provider.ClientDetailsService;
 import org.springframework.security.oauth2.provider.OAuth2RequestFactory;
 import org.springframework.security.oauth2.provider.approval.ApprovalStore;
@@ -51,7 +51,7 @@ public class Application {
 		private ClientDetailsService clientDetailsService;
 
 		@Override
-		public void configure(OAuth2AuthorizationServerConfigurer oauthServer) throws Exception {
+		public void configure(AuthorizationServerSecurityConfigurer oauthServer) throws Exception {
 			oauthServer.authenticationManager(authenticationManager);
 		}
 		
