@@ -2,6 +2,6 @@
 <configuration>
 
 	<include resource="org/springframework/boot/logging/logback/basic.xml"/>
-	<!-- logger name="org.springframework.security" level="DEBUG"/-->
+	<logger name="org.springframework.security" level="DEBUG"/>
 
 </configuration>

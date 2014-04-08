@@ -8,7 +8,6 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.security.SecurityProperties;
 import org.springframework.boot.autoconfigure.security.SecurityProperties.User;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
@@ -31,7 +30,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @Configuration
-@ComponentScan
 @EnableAutoConfiguration
 @RestController
 public class Application {
@@ -56,7 +54,7 @@ public class Application {
 			// @formatter:on
 		}
 	}
-	
+
 	public static void main(String[] args) {
 		SpringApplication.run(Application.class, args);
 	}
@@ -108,7 +106,7 @@ public class Application {
 		@Override
 		public void configure(AuthorizationServerSecurityConfigurer oauthServer) throws Exception {
 			oauthServer.authorizationCodeServices(authorizationCodeServices())
-					.authenticationManager(authenticationManager).tokenStore(tokenStore());
+					.authenticationManager(authenticationManager).tokenStore(tokenStore()).approvalStoreDisabled();
 		}
 
 		@Override

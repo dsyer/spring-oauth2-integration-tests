@@ -55,7 +55,7 @@ public abstract class AbstractIntegrationTests implements PortHolder {
 	@Autowired
 	private EmbeddedWebApplicationContext server;
 
-	@Autowired
+	@Autowired(required=false)
 	private TokenStore tokenStore;
 	
 	@Autowired(required=false)

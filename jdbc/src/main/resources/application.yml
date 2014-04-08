@@ -6,3 +6,10 @@ management:
 security:
   user:
     password: password
+
+---
+
+spring:
+  profiles: client
+server:
+  port: 8081

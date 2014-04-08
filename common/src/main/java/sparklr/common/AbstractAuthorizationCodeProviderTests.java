@@ -20,7 +20,9 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.Test;
 import org.springframework.http.HttpHeaders;
@@ -29,6 +31,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.security.crypto.codec.Base64;
+import org.springframework.security.oauth2.client.OAuth2RestTemplate;
 import org.springframework.security.oauth2.client.resource.UserApprovalRequiredException;
 import org.springframework.security.oauth2.client.resource.UserRedirectRequiredException;
 import org.springframework.security.oauth2.client.test.BeforeOAuth2Context;
@@ -40,6 +43,7 @@ import org.springframework.security.oauth2.common.OAuth2AccessToken;
 import org.springframework.security.oauth2.common.exceptions.RedirectMismatchException;
 import org.springframework.security.oauth2.common.util.OAuth2Utils;
 import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.StreamUtils;
 import org.springframework.web.client.DefaultResponseErrorHandler;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.ResourceAccessException;
@@ -358,6 +362,8 @@ public abstract class AbstractAuthorizationCodeProviderTests extends AbstractInt
 
 		assertTrue(location.startsWith(resource.getUserAuthorizationUri()));
 		assertNull(request.getAuthorizationCode());
+		
+		verifyAuthorizationPage(context.getRestTemplate(), location);
 
 		try {
 			// Now try again and the token provider will redirect for user approval...
@@ -375,6 +381,31 @@ public abstract class AbstractAuthorizationCodeProviderTests extends AbstractInt
 		// The approval (will be processed on the next attempt to obtain an access token)...
 		request.set(OAuth2Utils.USER_OAUTH_APPROVAL, "" + approved);
 
+	}
+
+	private void verifyAuthorizationPage(OAuth2RestTemplate restTemplate, String location) {
+		final AtomicReference<String> confirmationPage = new AtomicReference<String>();
+		AuthorizationCodeAccessTokenProvider provider = new AuthorizationCodeAccessTokenProvider() {
+			@Override
+			protected ResponseExtractor<ResponseEntity<Void>> getAuthorizationResponseExtractor() {
+				return new ResponseExtractor<ResponseEntity<Void>>() {
+					public ResponseEntity<Void> extractData(ClientHttpResponse response) throws IOException {
+						confirmationPage.set(StreamUtils.copyToString(response.getBody(), Charset.forName("UTF-8")));
+						return new ResponseEntity<Void>(response.getHeaders(), response.getStatusCode());
+					}
+				};
+			}
+		};
+		try {
+			provider.obtainAuthorizationCode(restTemplate.getResource(), restTemplate.getOAuth2ClientContext().getAccessTokenRequest());
+		} catch (UserApprovalRequiredException e) {
+			// ignore
+		}
+		String page = confirmationPage.get();
+		verifyAuthorizationPage(page);
+	}
+
+	protected void verifyAuthorizationPage(String page) {
 	}
 
 	protected static class MyTrustedClient extends AuthorizationCodeResourceDetails {
