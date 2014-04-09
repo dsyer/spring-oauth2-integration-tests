@@ -94,7 +94,7 @@ public class Application {
 		private DataSource dataSource;
 
 		@Bean
-		public TokenStore tokenStore() {
+		public JdbcTokenStore tokenStore() {
 			return new JdbcTokenStore(dataSource);
 		}
 

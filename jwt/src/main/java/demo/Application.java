@@ -79,7 +79,7 @@ public class Application {
 
 		@Override
 		public void configure(AuthorizationServerSecurityConfigurer oauthServer) throws Exception {
-			oauthServer.authenticationManager(authenticationManager).tokenService(tokenServices);
+			oauthServer.authenticationManager(authenticationManager).tokenServices(tokenServices);
 		}
 
 		@Override
