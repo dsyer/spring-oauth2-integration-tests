@@ -19,6 +19,8 @@ The apps are in subdirectories:
   
 * approval - an auth server with granular approvals (per scope)
 
+* jdbc - uses JDBC stores for everything
+
 * form - an auth server that accepts form-based client authentication
 
 * client - a simple client app
