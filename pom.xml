@@ -14,7 +14,6 @@
       <module>mappings</module>
       <module>form</module>
       <module>jwt</module>
-      <module>jwt-store</module>
       <module>approval</module>
       <module>jdbc</module>
       <module>client</module>

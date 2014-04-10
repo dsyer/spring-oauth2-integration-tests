@@ -3,10 +3,10 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<artifactId>spring-oauth2-tests-jwt</artifactId>
+	<artifactId>spring-oauth2-tests-jwt-store</artifactId>
 
-	<name>spring-oauth2-tests-jwt</name>
-	<description>Demo project for JWT tokens</description>
+	<name>spring-oauth2-tests-jwt-store</name>
+	<description>Demo project</description>
 
 	<parent>
 		<groupId>org.demo</groupId>

@@ -17,8 +17,9 @@ import org.springframework.security.oauth2.config.annotation.web.configurers.Aut
 import org.springframework.security.oauth2.config.annotation.web.configurers.ResourceServerSecurityConfigurer;
 import org.springframework.security.oauth2.provider.ClientDetailsService;
 import org.springframework.security.oauth2.provider.token.AuthorizationServerTokenServices;
-import org.springframework.security.oauth2.provider.token.JwtTokenServices;
-import org.springframework.security.oauth2.provider.token.ResourceServerTokenServices;
+import org.springframework.security.oauth2.provider.token.JwtTokenEnhancer;
+import org.springframework.security.oauth2.provider.token.JwtTokenStore;
+import org.springframework.security.oauth2.provider.token.TokenStore;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -38,31 +39,35 @@ public class Application {
 	}
 	
 	@Bean
-	public JwtTokenServices tokenServices(ClientDetailsService clientDetails) {
-		JwtTokenServices tokenServices = new JwtTokenServices();
-		tokenServices.setClientDetailsService(clientDetails);
-		return tokenServices;
+	public JwtTokenStore tokenStore() {
+		JwtTokenStore store = new JwtTokenStore(tokenEnhancer());
+		return store;
 	}
 
+	@Bean
+	public JwtTokenEnhancer tokenEnhancer() {
+		return new JwtTokenEnhancer();
+	}
+	
 	@Configuration
 	@EnableResourceServer
 	protected static class ResourceServer extends ResourceServerConfigurerAdapter {
 		
 		@Autowired
-		private ResourceServerTokenServices tokenServices;
+		private TokenStore tokenStore;
+
+		@Override
+		public void configure(ResourceServerSecurityConfigurer resources) throws Exception {
+			resources.tokenStore(tokenStore);
+		}
 
 		@Override
 		public void configure(HttpSecurity http) throws Exception {
 			// @formatter:off
 			http
 				.authorizeRequests()
-				.anyRequest().access("#oauth2.hasScope('read')");
+				.anyRequest().authenticated();
 			// @formatter:on
-		}
-
-		@Override
-		public void configure(ResourceServerSecurityConfigurer resources) throws Exception {
-			resources.resourceId("sparklr").tokenServices(tokenServices);
 		}
 
 	}
@@ -72,10 +77,13 @@ public class Application {
 	protected static class OAuth2Config extends AuthorizationServerConfigurerAdapter {
 
 		@Autowired
-		private AuthorizationServerTokenServices tokenServices;
+		private AuthenticationManager authenticationManager;
+		
+		@Autowired
+		private ClientDetailsService clientDetailsService;
 
 		@Autowired
-		private AuthenticationManager authenticationManager;
+		private AuthorizationServerTokenServices tokenServices;
 
 		@Override
 		public void configure(AuthorizationServerSecurityConfigurer oauthServer) throws Exception {
@@ -90,21 +98,18 @@ public class Application {
 		            .authorizedGrantTypes("password", "authorization_code", "refresh_token", "implicit")
 		            .authorities("ROLE_CLIENT", "ROLE_TRUSTED_CLIENT")
 		            .scopes("read", "write", "trust")
-		            .resourceIds("sparklr")
 		            .accessTokenValiditySeconds(60)
  		    .and()
 		        .withClient("my-client-with-registered-redirect")
 		            .authorizedGrantTypes("authorization_code")
 		            .authorities("ROLE_CLIENT")
 		            .scopes("read", "trust")
-		            .resourceIds("sparklr")
 		            .redirectUris("http://anywhere?key=value")
  		    .and()
 		        .withClient("my-client-with-secret")
 		            .authorizedGrantTypes("client_credentials", "password")
 		            .authorities("ROLE_CLIENT")
 		            .scopes("read", "write")
-		            .resourceIds("sparklr")
 		            .secret("secret");
 		// @formatter:on
 		}

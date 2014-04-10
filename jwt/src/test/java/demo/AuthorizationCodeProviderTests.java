@@ -12,17 +12,7 @@
  */
 package demo;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-import java.util.Arrays;
-
-import org.junit.Test;
 import org.springframework.boot.test.SpringApplicationConfiguration;
-import org.springframework.security.oauth2.client.test.OAuth2ContextConfiguration;
-import org.springframework.security.oauth2.client.token.grant.code.AuthorizationCodeResourceDetails;
-import org.springframework.security.oauth2.common.exceptions.InsufficientScopeException;
 
 import sparklr.common.AbstractAuthorizationCodeProviderTests;
 
@@ -31,21 +21,5 @@ import sparklr.common.AbstractAuthorizationCodeProviderTests;
  */
 @SpringApplicationConfiguration(classes = Application.class)
 public class AuthorizationCodeProviderTests extends AbstractAuthorizationCodeProviderTests {
-
-	@Test
-	@OAuth2ContextConfiguration(resource = MyClientWithRegisteredRedirect.class, initialize = false)
-	public void testInsufficientScopeInResourceRequest() throws Exception {
-		AuthorizationCodeResourceDetails resource = (AuthorizationCodeResourceDetails) context.getResource();
-		resource.setScope(Arrays.asList("trust"));
-		approveAccessTokenGrant("http://anywhere?key=value", true);
-		assertNotNull(context.getAccessToken());
-		try {
-			http.getForString("/admin/beans");
-			fail("Should have thrown exception");
-		}
-		catch (InsufficientScopeException ex) {
-			assertTrue("Wrong summary: " + ex, ex.getSummary().contains("scope=\"read"));
-		}
-	}
 
 }
