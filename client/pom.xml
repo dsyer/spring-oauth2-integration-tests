@@ -3,14 +3,14 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<artifactId>sparklr-boot-client</artifactId>
+	<artifactId>spring-oauth2-tests-client</artifactId>
 
-	<name>sparklr-boot-client</name>
+	<name>spring-oauth2-tests-client</name>
 	<description>Demo project</description>
 
 	<parent>
 		<groupId>org.demo</groupId>
-		<artifactId>sparklr-boot-parent</artifactId>
+		<artifactId>spring-oauth2-tests-parent</artifactId>
 		<version>0.0.1.BUILD-SNAPSHOT</version>
 	</parent>
 
@@ -29,7 +29,7 @@
 		</dependency>
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sparklr-boot-common</artifactId>
+			<artifactId>spring-oauth2-tests-common</artifactId>
 			<version>${project.version}</version>
 			<scope>test</scope>
 		</dependency>

@@ -28,6 +28,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.oauth2.client.test.OAuth2ContextSetup;
+import org.springframework.security.oauth2.provider.approval.ApprovalStore;
+import org.springframework.security.oauth2.provider.approval.InMemoryApprovalStore;
+import org.springframework.security.oauth2.provider.approval.JdbcApprovalStore;
 import org.springframework.security.oauth2.provider.token.InMemoryTokenStore;
 import org.springframework.security.oauth2.provider.token.JdbcTokenStore;
 import org.springframework.security.oauth2.provider.token.TokenStore;
@@ -59,6 +62,9 @@ public abstract class AbstractIntegrationTests implements PortHolder {
 	private TokenStore tokenStore;
 	
 	@Autowired(required=false)
+	private ApprovalStore approvalStore;
+	
+	@Autowired(required=false)
 	private DataSource dataSource;
 	
 	@Override
@@ -69,6 +75,23 @@ public abstract class AbstractIntegrationTests implements PortHolder {
 	@Before
 	public void init() throws Exception {
 		clear(tokenStore);
+		clear(approvalStore);
+	}
+
+	private void clear(ApprovalStore approvalStore) throws Exception {
+		if (approvalStore instanceof Advised) {
+			Advised advised = (Advised) tokenStore;
+			ApprovalStore target = (ApprovalStore) advised.getTargetSource().getTarget();
+			clear(target);
+			return;
+		}
+		if (approvalStore instanceof InMemoryApprovalStore) {
+			((InMemoryApprovalStore) approvalStore).clear();
+		}
+		if (approvalStore instanceof JdbcApprovalStore) {
+			JdbcTemplate template = new JdbcTemplate(dataSource);
+			template.execute("delete from oauth_approvals");
+		}
 	}
 
 	private void clear(TokenStore tokenStore) throws Exception {
