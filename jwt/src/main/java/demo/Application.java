@@ -16,7 +16,6 @@ import org.springframework.security.oauth2.config.annotation.web.configuration.R
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerSecurityConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.ResourceServerSecurityConfigurer;
 import org.springframework.security.oauth2.provider.ClientDetailsService;
-import org.springframework.security.oauth2.provider.token.AuthorizationServerTokenServices;
 import org.springframework.security.oauth2.provider.token.JwtTokenEnhancer;
 import org.springframework.security.oauth2.provider.token.JwtTokenStore;
 import org.springframework.security.oauth2.provider.token.TokenStore;
@@ -36,17 +35,6 @@ public class Application {
 	@RequestMapping("/")
 	public String home() {
 		return "Hello World";
-	}
-	
-	@Bean
-	public JwtTokenStore tokenStore() {
-		JwtTokenStore store = new JwtTokenStore(tokenEnhancer());
-		return store;
-	}
-
-	@Bean
-	public JwtTokenEnhancer tokenEnhancer() {
-		return new JwtTokenEnhancer();
 	}
 	
 	@Configuration
@@ -82,12 +70,20 @@ public class Application {
 		@Autowired
 		private ClientDetailsService clientDetailsService;
 
-		@Autowired
-		private AuthorizationServerTokenServices tokenServices;
-
+		@Bean
+		public JwtTokenStore tokenStore() {
+			JwtTokenStore store = new JwtTokenStore(tokenEnhancer());
+			return store;
+		}
+		
+		@Bean
+		public JwtTokenEnhancer tokenEnhancer() {
+			return new JwtTokenEnhancer();
+		}
+		
 		@Override
 		public void configure(AuthorizationServerSecurityConfigurer oauthServer) throws Exception {
-			oauthServer.authenticationManager(authenticationManager).tokenServices(tokenServices);
+			oauthServer.authenticationManager(authenticationManager).tokenStore(tokenStore()).tokenEnhancer(tokenEnhancer());
 		}
 
 		@Override
