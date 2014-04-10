@@ -21,7 +21,7 @@ import org.springframework.security.oauth2.config.annotation.web.configuration.E
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
 import org.springframework.security.oauth2.config.annotation.web.configuration.ResourceServerConfigurerAdapter;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerSecurityConfigurer;
-import org.springframework.security.oauth2.config.annotation.web.configurers.OAuth2ResourceServerConfigurer;
+import org.springframework.security.oauth2.config.annotation.web.configurers.ResourceServerSecurityConfigurer;
 import org.springframework.security.oauth2.provider.code.AuthorizationCodeServices;
 import org.springframework.security.oauth2.provider.code.JdbcAuthorizationCodeServices;
 import org.springframework.security.oauth2.provider.token.JdbcTokenStore;
@@ -72,7 +72,7 @@ public class Application {
 		private TokenStore tokenStore;
 
 		@Override
-		public void configure(OAuth2ResourceServerConfigurer resources) throws Exception {
+		public void configure(ResourceServerSecurityConfigurer resources) throws Exception {
 			resources.tokenStore(tokenStore);
 		}
 
