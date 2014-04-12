@@ -17,6 +17,7 @@
       <module>approval</module>
       <module>jdbc</module>
       <module>client</module>
+      <module>resource</module>
     </modules>
 
 	<name>spring-oauth2-tests</name>
