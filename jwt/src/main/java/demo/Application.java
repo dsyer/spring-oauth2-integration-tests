@@ -13,7 +13,7 @@ import org.springframework.security.oauth2.config.annotation.web.configuration.E
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer;
 import org.springframework.security.oauth2.provider.ClientDetailsService;
-import org.springframework.security.oauth2.provider.token.JwtTokenEnhancer;
+import org.springframework.security.oauth2.provider.token.JwtAccessTokenConverter;
 import org.springframework.security.oauth2.provider.token.JwtTokenStore;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -51,8 +51,8 @@ public class Application {
 		}
 
 		@Bean
-		public JwtTokenEnhancer tokenEnhancer() {
-			return new JwtTokenEnhancer();
+		public JwtAccessTokenConverter tokenEnhancer() {
+			return new JwtAccessTokenConverter();
 		}
 
 		@Override

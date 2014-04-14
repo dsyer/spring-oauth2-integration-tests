@@ -6,7 +6,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
-import org.springframework.security.oauth2.provider.token.JwtTokenEnhancer;
+import org.springframework.security.oauth2.provider.token.JwtAccessTokenConverter;
 import org.springframework.security.oauth2.provider.token.JwtTokenStore;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -20,7 +20,7 @@ public class Application {
 	
 	@Bean
 	public JwtTokenStore tokenStore() throws Exception {
-		JwtTokenEnhancer enhancer = new JwtTokenEnhancer();
+		JwtAccessTokenConverter enhancer = new JwtAccessTokenConverter();
 		// N.B. in a real system you would have to configure the verifierKey (or use JdbcTokenStore)
 		enhancer.afterPropertiesSet();
 		return new JwtTokenStore(enhancer);
