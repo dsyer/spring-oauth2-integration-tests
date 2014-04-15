@@ -10,7 +10,9 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.junit.Test;
+import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -144,7 +146,7 @@ public abstract class AbstractResourceOwnerPasswordProviderTests extends Abstrac
 	@Test
 	@OAuth2ContextConfiguration(resource = NoSuchClient.class, initialize = false)
 	public void testNoSuchClient() throws Exception {
-		
+
 		// The error comes back as additional information because OAuth2AccessToken is so extensible!
 		try {
 			context.getAccessToken();
@@ -163,9 +165,27 @@ public abstract class AbstractResourceOwnerPasswordProviderTests extends Abstrac
 	}
 
 	@Test
+	public void testTokenEndpointOptions() throws Exception {
+		// first make sure the resource is actually protected.
+		assertEquals(
+				HttpStatus.OK,
+				http.getRestTemplate().exchange(http.getUrl("/oauth/token"), HttpMethod.OPTIONS,
+						new HttpEntity<Void>((Void)null), String.class).getStatusCode());
+	}
+
+	@Test
+	public void testTokenEndpointunauthenticated() throws Exception {
+		// first make sure the resource is actually protected.
+		assertEquals(
+				HttpStatus.UNAUTHORIZED,
+				http.getRestTemplate().exchange(http.getUrl("/oauth/token"), HttpMethod.GET,
+						new HttpEntity<Void>((Void)null), String.class).getStatusCode());
+	}
+
+	@Test
 	@OAuth2ContextConfiguration(resource = InvalidGrantType.class, initialize = false)
 	public void testInvalidGrantType() throws Exception {
-		
+
 		// The error comes back as additional information because OAuth2AccessToken is so extensible!
 		try {
 			context.getAccessToken();
@@ -189,9 +209,11 @@ public abstract class AbstractResourceOwnerPasswordProviderTests extends Abstrac
 	@Test
 	public void testMissingGrantType() throws Exception {
 		HttpHeaders headers = new HttpHeaders();
-		headers.set("Authorization", String.format("Basic %s", new String(Base64.encode("my-trusted-client:".getBytes()))));
+		headers.set("Authorization",
+				String.format("Basic %s", new String(Base64.encode("my-trusted-client:".getBytes()))));
 		headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
-		ResponseEntity<String> response = http.postForString(tokenPath(), headers, new LinkedMultiValueMap<String, String>());
+		ResponseEntity<String> response = http.postForString(tokenPath(), headers,
+				new LinkedMultiValueMap<String, String>());
 		assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
 		assertTrue(response.getBody().contains("invalid_request"));
 	}
