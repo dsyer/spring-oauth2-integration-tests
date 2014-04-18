@@ -99,7 +99,7 @@ public abstract class AbstractResourceOwnerPasswordProviderTests extends Abstrac
 		String authenticate = response.getHeaders().getFirst("WWW-Authenticate");
 		assertTrue("Wrong header: " + authenticate, authenticate.contains("error=\"invalid_token\""));
 	}
-
+	
 	@Test
 	@OAuth2ContextConfiguration(ResourceOwner.class)
 	public void testTokenObtainedWithHeaderAuthentication() throws Exception {
@@ -165,15 +165,6 @@ public abstract class AbstractResourceOwnerPasswordProviderTests extends Abstrac
 	}
 
 	@Test
-	public void testTokenEndpointOptions() throws Exception {
-		// first make sure the resource is actually protected.
-		assertEquals(
-				HttpStatus.OK,
-				http.getRestTemplate().exchange(http.getUrl("/oauth/token"), HttpMethod.OPTIONS,
-						new HttpEntity<Void>((Void)null), String.class).getStatusCode());
-	}
-
-	@Test
 	public void testTokenEndpointunauthenticated() throws Exception {
 		// first make sure the resource is actually protected.
 		assertEquals(
@@ -218,7 +209,7 @@ public abstract class AbstractResourceOwnerPasswordProviderTests extends Abstrac
 		assertTrue(response.getBody().contains("invalid_request"));
 	}
 
-	static class ResourceOwner extends ResourceOwnerPasswordResourceDetails {
+	protected static class ResourceOwner extends ResourceOwnerPasswordResourceDetails {
 		public ResourceOwner(Object target) {
 			setClientId("my-trusted-client");
 			setScope(Arrays.asList("read"));

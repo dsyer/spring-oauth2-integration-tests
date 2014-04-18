@@ -89,6 +89,17 @@ public abstract class AbstractClientCredentialsProviderTests extends AbstractInt
 		}
 	}
 
+	protected static class TrustedClientCredentials extends ClientCredentialsResourceDetails {
+
+		public TrustedClientCredentials(Object target) {
+			setClientId("my-truusted-client");
+			setScope(Arrays.asList("read"));
+			setId(getClientId());
+			AbstractClientCredentialsProviderTests test = (AbstractClientCredentialsProviderTests) target;
+			setAccessTokenUri(test.http.getUrl(tokenPath()));
+		}
+	}
+
 	static class InvalidClientCredentials extends ClientCredentials {
 		public InvalidClientCredentials(Object target) {
 			super(target);
@@ -106,6 +117,5 @@ public abstract class AbstractClientCredentialsProviderTests extends AbstractInt
 			setAccessTokenUri(test.http.getUrl(tokenPath()));
 		}
 	}
-
 
 }

@@ -12,9 +12,8 @@ import org.springframework.security.oauth2.config.annotation.web.configuration.A
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableAuthorizationServer;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer;
-import org.springframework.security.oauth2.provider.ClientDetailsService;
+import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerSecurityConfigurer;
 import org.springframework.security.oauth2.provider.token.JwtAccessTokenConverter;
-import org.springframework.security.oauth2.provider.token.JwtTokenStore;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -41,24 +40,20 @@ public class Application {
 		@Autowired
 		private AuthenticationManager authenticationManager;
 
-		@Autowired
-		private ClientDetailsService clientDetailsService;
-
 		@Bean
-		public JwtTokenStore tokenStore() {
-			JwtTokenStore store = new JwtTokenStore(tokenEnhancer());
-			return store;
-		}
-
-		@Bean
-		public JwtAccessTokenConverter tokenEnhancer() {
+		public JwtAccessTokenConverter accessTokenConverter() {
 			return new JwtAccessTokenConverter();
 		}
 
 		@Override
+		public void configure(AuthorizationServerSecurityConfigurer oauthServer) throws Exception {
+			oauthServer.tokenKeyAccess("isAnonymous() || hasAuthority('ROLE_TRUSTED_CLIENT')").checkTokenAccess(
+					"hasAuthority('ROLE_TRUSTED_CLIENT')");
+		}
+
+		@Override
 		public void configure(AuthorizationServerEndpointsConfigurer endpoints) throws Exception {
-			endpoints.authenticationManager(authenticationManager).tokenStore(tokenStore())
-					.tokenEnhancer(tokenEnhancer());
+			endpoints.authenticationManager(authenticationManager).accessTokenConverter(accessTokenConverter());
 		}
 
 		@Override
@@ -79,7 +74,7 @@ public class Application {
  		    .and()
 		        .withClient("my-client-with-secret")
 		            .authorizedGrantTypes("client_credentials", "password")
-		            .authorities("ROLE_CLIENT")
+		            .authorities("ROLE_CLIENT", "ROLE_TRUSTED_CLIENT")
 		            .scopes("read", "write")
 		            .secret("secret");
 		// @formatter:on

@@ -44,7 +44,7 @@ public class Application {
 		
 		@Override
 		public void configure(AuthorizationServerEndpointsConfigurer endpoints) throws Exception {
-			endpoints.authenticationManager(authenticationManager);
+			endpoints.authenticationManager(authenticationManager).tokenStore(tokenStore());
 		}
 		
 		@Bean

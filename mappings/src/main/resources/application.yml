@@ -12,3 +12,4 @@ oauth:
     token: /token
     authorize: /authorize
     confirm: /approve    
+    check_token: /decode

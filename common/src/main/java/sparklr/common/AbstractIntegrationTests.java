@@ -15,7 +15,7 @@ package sparklr.common;
 
 import javax.sql.DataSource;
 
-import org.junit.Before;
+import org.junit.After;
 import org.junit.Rule;
 import org.junit.runner.RunWith;
 import org.springframework.aop.framework.Advised;
@@ -47,6 +47,10 @@ public abstract class AbstractIntegrationTests implements PortHolder {
 
 	private static String globalTokenPath;
 
+	private static String globalTokenKeyPath;
+
+	private static String globalCheckTokenPath;
+
 	private static String globalAuthorizePath;
 
 	@Rule
@@ -58,21 +62,21 @@ public abstract class AbstractIntegrationTests implements PortHolder {
 	@Autowired
 	private EmbeddedWebApplicationContext server;
 
-	@Autowired(required=false)
+	@Autowired(required = false)
 	private TokenStore tokenStore;
-	
-	@Autowired(required=false)
+
+	@Autowired(required = false)
 	private ApprovalStore approvalStore;
-	
-	@Autowired(required=false)
+
+	@Autowired(required = false)
 	private DataSource dataSource;
-	
+
 	@Override
 	public int getPort() {
 		return server == null ? 8080 : server.getEmbeddedServletContainer().getPort();
 	}
 
-	@Before
+	@After
 	public void init() throws Exception {
 		clear(tokenStore);
 		clear(approvalStore);
@@ -118,6 +122,16 @@ public abstract class AbstractIntegrationTests implements PortHolder {
 		globalTokenPath = tokenPath;
 	}
 
+	@Value("${oauth.paths.token_key:/oauth/token_key}")
+	public void setTokenKeyPath(String tokenKeyPath) {
+		globalTokenKeyPath = tokenKeyPath;
+	}
+
+	@Value("${oauth.paths.check_token:/oauth/check_token}")
+	public void setCheckTokenPath(String tokenPath) {
+		globalCheckTokenPath = tokenPath;
+	}
+
 	@Value("${oauth.paths.authorize:/oauth/authorize}")
 	public void setAuthorizePath(String authorizePath) {
 		globalAuthorizePath = authorizePath;
@@ -125,6 +139,14 @@ public abstract class AbstractIntegrationTests implements PortHolder {
 
 	public static String tokenPath() {
 		return globalTokenPath;
+	}
+
+	public static String tokenKeyPath() {
+		return globalTokenKeyPath;
+	}
+
+	public static String checkTokenPath() {
+		return globalCheckTokenPath;
 	}
 
 	public static String authorizePath() {
