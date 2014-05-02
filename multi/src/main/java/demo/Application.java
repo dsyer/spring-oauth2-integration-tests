@@ -36,25 +36,31 @@ public class Application {
 		return "Hello World";
 	}
 
-	@Configuration
-	protected static class AdminResourceConfig extends ResourceServerConfiguration {
+	protected static class AdminResourceServerConfiguration extends ResourceServerConfiguration {
+		// Empty class because Spring Security hashes configurers against their concrete type and we need two the same
+	}
 
-		public AdminResourceConfig() {
-			setConfigurers(Arrays.<ResourceServerConfigurer> asList(new ResourceServerConfigurerAdapter() {
+	@Bean
+	protected AdminResourceServerConfiguration adminResources() {
 
-				@Override
-				public void configure(ResourceServerSecurityConfigurer resources) throws Exception {
-					resources.resourceId("oauth2/admin");
-				}
+		AdminResourceServerConfiguration resource = new AdminResourceServerConfiguration();
 
-				@Override
-				public void configure(HttpSecurity http) throws Exception {
-					http.requestMatchers().antMatchers("/admin/**").and().authorizeRequests().anyRequest()
-							.access("#oauth2.hasScope('read')");
-				}
+		resource.setConfigurers(Arrays.<ResourceServerConfigurer> asList(new ResourceServerConfigurerAdapter() {
 
-			}));
-		}
+			@Override
+			public void configure(ResourceServerSecurityConfigurer resources) throws Exception {
+				resources.resourceId("oauth2/admin");
+			}
+
+			@Override
+			public void configure(HttpSecurity http) throws Exception {
+				http.requestMatchers().antMatchers("/admin/**").and().authorizeRequests().anyRequest()
+						.access("#oauth2.hasScope('read')");
+			}
+
+		}));
+
+		return resource;
 
 	}
 
