@@ -23,6 +23,11 @@ The apps are in subdirectories:
 
 * form - an auth server that accepts form-based client authentication
 
+* multi - an auth server and multiple Resource Servers in one app
+
+* resource - a pure Resoure Server (needs to be paired with an auth
+  server and share a token store)
+
 * client - a simple client app
 
 The client is wired to the other servers as long as they run on the
